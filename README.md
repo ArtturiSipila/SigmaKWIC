@@ -1,1 +1,1 @@
-Key word in Context visualization using sigma.js
+Key word in Context visualization using Sigma.js
