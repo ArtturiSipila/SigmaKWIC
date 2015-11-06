@@ -8,11 +8,13 @@
  */
 var i,
     s,
+    o,
     g = {
       nodes: [],
       edges: []
     },
-    //dom,
+    L = 10,
+    step = 0,
     topic = 'my topic'
     kws = [
       {keyword: 'dolor', context_before: 'Lorem ipsum', context_after: 'sit amet'},
@@ -29,27 +31,58 @@ var i,
       
 
 // Generate a random graph:
+
 g.nodes.push({
   id: 'topicNode',
-   label: topic,
-   x: 0,
-   y: 0.5,
-   size: 1,
-   color: '#888',
-   type: 'goo'
+  label: topic,
+  x: 0,
+  y: 4,
+  circular_x: 0.5,
+  circular_y: 0.5,
+  //grid_x: 0.5,
+  grid_x: 0,
+  grid_y: 4,
+  size: 1,
+  circular_size: 1,
+  grid_size: 1,
+  color: '#888',
+  circular_color: '#888',
+  grid_color: '#888',
+  type: 'goo'
 });
 
 
-for (i = 0; i < kws.length; i++)
-  g.nodes.push({
+
+for (i = 0; i < kws.length; i++) {
+  o = {
     id: 'kw_' + i,
     label: kws[i].keyword,
-    x: 0.1+Math.random()*0.9,
-    y: Math.random(),
-    size: Math.random(),
-    color: '#666',
+    //x: 0.1+Math.random()*0.9,
+    //y: Math.random(),
+    circular_x: L * Math.cos(Math.PI * 2 * i / kws.length - Math.PI / 2),
+    circular_y: L * Math.sin(Math.PI * 2 * i / kws.length - Math.PI / 2),
+    circular_size: Math.random(),
+    circular_color: '#' + (
+      Math.floor(Math.random() * 16777215).toString(16) + '000000'
+    ).substr(0, 6),
+    //grid_x: i % L,
+    grid_x: 2,
+    //grid_y: Math.floor(i / L),
+    grid_y: i,
+    grid_size: 2,
+    grid_color: '#ccc',
+    //size: Math.random(),
+    //color: '#666',
     type: 'goo'
+  };
+  
+  ['x', 'y', 'size', 'color'].forEach(function(val) {
+    o[val] = o['grid_' + val];
   });
+  
+  console.log(o);
+  g.nodes.push(o);
+}
 
 
 for (i = 0; i < kws.length; i++)
@@ -57,7 +90,7 @@ for (i = 0; i < kws.length; i++)
     id: 'edge_' + i,
     source: 'topicNode',
     target: 'kw_' + i,
-    size: Math.random()*0.9,
+    size: 0.8,
     color: '#ccc',
     type: 'goo'
   });
@@ -249,15 +282,48 @@ s = new sigma({
     edgeColor: 'default',
     
     doubleClickEnabled: false,
-    minEdgeSize: 0.5,
-    maxEdgeSize: 4,
+    //minEdgeSize: 0.5,
+    //maxEdgeSize: 4,
     enableEdgeHovering: true,
     edgeHoverColor: '#222',
     defaultEdgeHoverColor: '#222',
     edgeHoverSizeRatio: 5,
     edgeHoverExtremities: true,
+    
+    animationsTime: 1000
   }
 });
+
+//var prefix = ['grid_', 'circular_'][step = +!step];
+var prefix = 'circular_';
+//setInterval(function() {
+  /*
+  
+  sigma.plugins.animate(
+    s,
+    {
+      x: prefix + 'x',
+      y: prefix + 'y',
+      size: prefix + 'size',
+      color: prefix + 'color'
+    }
+
+    
+  );
+//}, 2000);
+*/
+
+var toggleAnimation = function () {
+ 
+  sigma.plugins.animate(
+    s,
+    {
+      x: prefix + 'x',
+      y: prefix + 'y',
+      size: prefix + 'size',
+      color: prefix + 'color'
+    });  
+};
 
 /**
    * EVENTS BINDING:
@@ -266,9 +332,10 @@ s = new sigma({
   //console.log("dom: ",dom)
   
   // Bind the events:
+ /*
 s.bind('overNode outNode clickNode doubleClickNode rightClickNode', function(e) {
   console.log(e.type, e.data.node.label, e.data.captor);
-  e.data.node.label = 'asdasdasdas';
+  //e.data.node.label = 'asdasdasdas';
 });
 s.bind('overEdge outEdge clickEdge doubleClickEdge rightClickEdge', function(e) {
   console.log(e.type, e.data.edge, e.data.captor);
@@ -278,5 +345,18 @@ s.bind('clickStage', function(e) {
 });
 s.bind('doubleClickStage rightClickStage', function(e) {
   console.log(e.type, e.data.captor);
+});
+*/
+s.bind('clickNode', function(e) {
+  console.log(e);
+  //e.data.node.label = 'asdasdasdas'
+  if (e.data.node.id == 'topicNode') {
+     prefix = 'circular_';
+    toggleAnimation();
+  }
+  else {
+     prefix = 'grid_';
+    toggleAnimation();
+  }
 });
 //dom = document.querySelector('#graph-container canvas:last-child');
