@@ -1,13 +1,6 @@
-/**
- * This is a basic example on how to instantiate sigma. A random graph is
- * generated and stored in the "graph" variable, and then sigma is instantiated
- * directly with the graph.
- *
- * The simple instance of sigma is enough to make it render the graph on the on
- * the screen, since the graph is given directly to the constructor.
- */
+"use strict"
 var i,
-    s,
+    sigmaInstance,
     o,
     g = {
       nodes: [],
@@ -15,7 +8,7 @@ var i,
     },
     L = 10,
     step = 0,
-    topic = 'my topic'
+    topic = 'my topic',
     kws = [
       {keyword: 'dolor', context_before: 'Lorem ipsum', context_after: 'sit amet'},
       {keyword: 'sed', context_before: 'consectetur adipiscing elit,', context_after: 'do eiusmod tempor incididunt'},
@@ -27,7 +20,9 @@ var i,
       {keyword: 'exercitationem', context_before: 'quis nostrum', context_after: 'ullam corporis'},
       {keyword: 'commodi', context_before: 'nisi ut aliquid ex ea', context_after: 'consequatur?'},
       {keyword: 'quam', context_before: 'velit esse', context_after: 'nihil molestiae consequatur'}
-      ];
+      ],
+   kw_size = 0.9,
+   nodeHighlightColor = '#FF0000'
       
 
 // Generate a random graph:
@@ -39,40 +34,38 @@ g.nodes.push({
   y: 4,
   circular_x: 0.5,
   circular_y: 0.5,
-  //grid_x: 0.5,
   grid_x: 0,
   grid_y: 4,
+  original_grid_x: 0,
+  original_grid_y: 0,
   size: 1,
   circular_size: 1,
   grid_size: 1,
   color: '#888',
   circular_color: '#888',
   grid_color: '#888',
+  selected: true,
   type: 'goo'
 });
-
 
 
 for (i = 0; i < kws.length; i++) {
   o = {
     id: 'kw_' + i,
     label: kws[i].keyword,
-    //x: 0.1+Math.random()*0.9,
-    //y: Math.random(),
+    keyword: kws[i].keyword,
+    context_before: kws[i].context_before,
+    context_after: kws[i].context_after,
     circular_x: L * Math.cos(Math.PI * 2 * i / kws.length - Math.PI / 2),
     circular_y: L * Math.sin(Math.PI * 2 * i / kws.length - Math.PI / 2),
-    circular_size: Math.random(),
-    circular_color: '#' + (
-      Math.floor(Math.random() * 16777215).toString(16) + '000000'
-    ).substr(0, 6),
-    //grid_x: i % L,
+    circular_size: kw_size,
+    circular_color: '#8A1264',
     grid_x: 2,
-    //grid_y: Math.floor(i / L),
+    original_grid_x: 2,
     grid_y: i,
-    grid_size: 2,
+    grid_size: kw_size,
     grid_color: '#ccc',
-    //size: Math.random(),
-    //color: '#666',
+    selected: false,
     type: 'goo'
   };
   
@@ -190,81 +183,14 @@ for (i = 0; i < kws.length; i++)
     ctx.fill();
   };
 
+// "methods have to be added before instances are created to make them available""
+sigma.classes.graph.addMethod('getNodesCount', function() {
+  return this.nodesArray.length;
+});
 
- 
-  
-  /*
-    dom.addEventListener('click', function(e) {
-      console.log("clicked: ",e);
-    });
-    */
-  
-  /*
-  dom.addEventListener('click', function(e) {
-    // Find neighbors:
-    var x,
-        y,
-        p,
-        id,
-        neighbors;
-
-    x = sigma.utils.getX(e) - dom.offsetWidth / 2;
-    y = sigma.utils.getY(e) - dom.offsetHeight / 2;
-
-    p = c.cameraPosition(x, y);
-    x = p.x;
-    y = p.y;
-
-    neighbors = s.graph.nodes().filter(function(n) {
-      return (Math.sqrt(
-        Math.pow(n.x - x, 2) +
-        Math.pow(n.y - y, 2)
-      ) - n.size) < radius;
-    });
-
-    if (!spaceMode)
-      s.graph.addNode({
-        id: (id = (++nId) + ''),
-        size: nodeRadius,
-        x: x + Math.random() / 10,
-        y: y + Math.random() / 10,
-        dX: 0,
-        dY: 0,
-        type: 'goo'
-      });
-
-    neighbors.forEach(function(n) {
-      if (!spaceMode)
-        s.graph.addEdge({
-          id: (++eId) + '',
-          source: id,
-          target: n.id,
-          type: 'goo'
-        });
-      else
-        s.graph.dropNode(n.id);
-    });
-  }, false);
-  dom.addEventListener('mousemove', function(e) {
-    mouseX = sigma.utils.getX(e);
-    mouseY = sigma.utils.getY(e);
-  }, false);
-  dom.addEventListener('DOMMouseScroll', function(e) {
-    radius *= sigma.utils.getDelta(e) < 0 ? 1 / wheelRatio : wheelRatio;
-  }, false);
-  dom.addEventListener('mousewheel', function(e) {
-    radius *= sigma.utils.getDelta(e) < 0 ? 1 / wheelRatio : wheelRatio;
-  }, false);
-  document.addEventListener('keydown', function(e) {
-    spaceMode = (e.which == 32) ? true : spaceMode;
-  });
-  document.addEventListener('keyup', function(e) {
-    spaceMode = e.which == 32 ? false : spaceMode;
-  });
-})();
-*/
 // Instantiate sigma:
-s = new sigma({
+sigmaInstance = new sigma({
+  id: 'mySigma',
   graph: g,
   renderer: {
     container: document.getElementById('graph-container'),
@@ -275,12 +201,12 @@ s = new sigma({
     //autoRescale: false,
     mouseEnabled: true,
     touchEnabled: false,
+    mouseWheelEnabled: false,  //disable mouse wheel zooming
     nodesPowRatio: 1,
     edgesPowRatio: 1,
     defaultEdgeColor: '#333',
     defaultNodeColor: '#333',
     edgeColor: 'default',
-    
     doubleClickEnabled: false,
     //minEdgeSize: 0.5,
     //maxEdgeSize: 4,
@@ -294,37 +220,27 @@ s = new sigma({
   }
 });
 
-//var prefix = ['grid_', 'circular_'][step = +!step];
 var prefix = 'circular_';
-//setInterval(function() {
-  /*
-  
-  sigma.plugins.animate(
-    s,
-    {
-      x: prefix + 'x',
-      y: prefix + 'y',
-      size: prefix + 'size',
-      color: prefix + 'color'
-    }
-
-    
-  );
-//}, 2000);
-*/
-
-var toggleAnimation = function () {
+var toggleAnimation = function (callback) {
  
   sigma.plugins.animate(
-    s,
+    sigmaInstance,
     {
       x: prefix + 'x',
       y: prefix + 'y',
-      size: prefix + 'size',
-      color: prefix + 'color'
-    });  
+      size: prefix + 'size'
+      //color: prefix + 'color'
+    },
+    {
+      onComplete: function() {
+        console.log("animation complete");
+        if (callback) callback();
+      }
+    }
+    
+    );  
 };
-
+toggleAnimation();
 /**
    * EVENTS BINDING:
    * ***************
@@ -347,16 +263,169 @@ s.bind('doubleClickStage rightClickStage', function(e) {
   console.log(e.type, e.data.captor);
 });
 */
-s.bind('clickNode', function(e) {
+ 
+sigmaInstance.bind('clickNode', function(e) {
   console.log(e);
-  //e.data.node.label = 'asdasdasdas'
+  
+     
+        //common functionality regardless if the node is a topic or keyword
+        sigmaInstance.graph.nodes().forEach(function (n) {
+          
+           //drop temp nodes if they exist
+          if (n.id === "tempNodeBefore")
+            sigmaInstance.graph.dropNode("tempNodeBefore");
+          if (n.id === "tempNodeAfter")
+            sigmaInstance.graph.dropNode("tempNodeAfter");
+            
+             if (n.id === e.data.node.id) {
+                n.color = nodeHighlightColor;       //use the highlight color
+             }
+             else {
+                 n.color =   n[prefix + 'color'];   //use the normal color
+             }
+            
+        });
+  
+  
+  
+  
+  
   if (e.data.node.id == 'topicNode') {
      prefix = 'circular_';
-    toggleAnimation();
+     
+     //restore node defaults
+     sigmaInstance.graph.nodes().forEach(function (n) {
+       n.label =  n.keyword;
+     });
+     
+    toggleAnimation(null);
   }
   else {
      prefix = 'grid_';
-    toggleAnimation();
+     
+    
+    //e.data.node.color = '#AA0000';
+    console.log(e.data.node);
+    
+     
+       var tempNodeBefore, tempNodeAfter;
+       if (!e.data.node.selected) {  //new selection
+       
+       var callback = null;
+       
+         
+         
+         sigmaInstance.graph.nodes().forEach(function (n) {
+           // if (toKeep[n.id])
+           //   n.color = n.originalColor;
+           // else
+           //  n.color = '#eee';
+           //console.log(n);
+         
+           console.log("node is not selected")
+           if (n.id === e.data.node.id) {
+           
+              callback = function() {
+                
+                console.log("animation callback!");
+                
+                //temporary nodes
+                    tempNodeBefore = {
+                      id: "tempNodeBefore",
+                      size: 1,
+                      grid_size: 1,
+                      x: n.grid_x -0.5,
+                      y: n.grid_y - 0.5,
+                      grid_x: n.grid_x - 0.5,
+                      grid_y: n.grid_y - 0.5,
+                      label: n.context_before,
+                      type: 'goo'
+                    };
+                    
+                    tempNodeAfter = {
+                      id: "tempNodeAfter",
+                      size: 1,
+                      grid_size: 1,
+                      x: n.grid_x + 0.5,
+                      y: n.grid_y + 0.5,
+                      grid_x: n.grid_x + 0.5,
+                      grid_y: n.grid_y + 0.5,
+                      label: n.context_after,
+                      type: 'goo'
+                    };
+              
+              console.log("tempNodeAfter: ",tempNodeAfter);
+                    sigmaInstance.graph.addNode(tempNodeBefore);
+                    sigmaInstance.graph.addNode(tempNodeAfter);
+                    
+                     sigmaInstance.graph.addEdge({
+                      id: 'nodeBeforeEdge',
+                      source: tempNodeBefore.id,
+                      target: n.id,
+                      type: 'goo'
+                    });
+            
+           
+                  sigmaInstance.graph.addEdge({
+                    id: 'nodeAfterEdge',
+                    source: tempNodeAfter.id,
+                    target: n.id,
+                    type: 'goo'
+                  });
+                  sigmaInstance.refresh(); 
+              };
+             
+             n.label =  n.keyword;
+             n.grid_x = n.original_grid_x + 0.5;
+             
+             n.selected = true;
+           }
+           else {
+            
+            
+             //restore properties
+             //n.grid_size = kw_size;
+             //n.grid_x = n.original_grid_x;
+             
+             if (n.id !== 'topicNode') {
+                n.label =  n.keyword;
+             }
+           
+             if (n.id !== 'tempNodeBefore' || n.id !== 'tempNodeAfter') {
+              n.grid_x = -n.original_grid_x; 
+             }
+             //n.grid_size *= 0.5;
+             n.selected = false; //unselect other nodes
+           }
+
+
+         });
+       }
+       else {  //already selected
+         console.log("node was already selected");
+         
+       }
+        
+        // Since the data has been modified, we need to
+        // call the refresh method to make the colors
+        // update effective.
+        if (!callback)
+          sigmaInstance.refresh();
+          
+        toggleAnimation(callback);
+        callback = null;
+        
+        
   }
 });
+
+
+/*
+sigmaInstance.bind('overNode', function(event) {
+  console.log("overnodes");
+    //console.log(sigmaInstance.graph.getNodesCount());
+      
+    
+     });
+     */
 //dom = document.querySelector('#graph-container canvas:last-child');
