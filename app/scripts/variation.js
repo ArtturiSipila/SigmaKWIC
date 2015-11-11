@@ -22,7 +22,7 @@ var i,
       {keyword: 'quam', phrases: ['velit esse', 'nihil molestiae consequatur']}
       ],
    kw_size = 0.9,
-   nodeHighlightColor = '#FF0000'
+   nodeHighlightColor = '#B85959';
       
 
 // Generate a random graph:
@@ -226,6 +226,51 @@ sigmaInstance = new sigma({
 var prefix = 'circular_';
 var toggleAnimation = function (callback) {
 
+  //calculate colors based on the new position
+  /*
+  var conId = sigmaInstance.renderers[0].conradId;
+  var nodesOnGraph = sigmaInstance.graph.nodes();
+  var mapX = sigmaInstance.graph.nodes().map(function (o) {
+    return o['renderer' + conId + ':x'];
+  })
+
+  var mapY = sigmaInstance.graph.nodes().map(function (o) {
+    return o['renderer' + conId + ':y'];
+  })
+
+  var xMax = Math.max.apply(Math, mapX)
+  var xMin = Math.min.apply(Math, mapX)
+  var xRange = xMax - xMin;
+  var yMax = Math.max.apply(Math, mapY)
+  var yMin = Math.min.apply(Math, mapY)
+  var yRange = yMax - yMin;
+
+
+  for (var i = 0, x, y, z, a, b, c; i < nodesOnGraph.length; i++) {
+    x = Math.pow((xMax - nodesOnGraph[i]['renderer' + conId + ':x']) / (xRange), 2) * 16;
+    y = Math.pow((yMax - nodesOnGraph[i]['renderer' + conId + ':y']) / (yRange), 2) * 16;
+    z = x + y / 2;
+
+    a = Math.min(Math.round(x), 15).toString(16);
+    b = Math.min(Math.round(y), 15).toString(16);
+    c = Math.round((16 - x + z) / 2).toString(16); //out of various spatial conditions this worked out the best. You can play around with this. 
+
+
+    a = a + a;
+    b = b + b;
+    c = c + c;
+
+
+    //console.log(a+b+a)
+
+
+    nodesOnGraph[i].color = "#" + a + b + c
+
+  }
+  sigmaInstance.refresh();
+  */
+
+
   sigma.plugins.animate(
     sigmaInstance,
     {
@@ -285,154 +330,138 @@ s.bind('doubleClickStage rightClickStage', function(e) {
 });
 */
 var tempNodes = [];
-sigmaInstance.bind('clickNode', function(e) {
-  console.log(e);
+sigmaInstance.bind('clickNode', function (e) {
+  //console.log(e);
   
      
-        //common functionality regardless if the node is a topic or keyword
-        sigmaInstance.graph.nodes().forEach(function (n) {
+  //common functionality regardless if the node is a topic or keyword
+  sigmaInstance.graph.nodes().forEach(function (n) {
           
-           //drop temp nodes if they exist
-           tempNodes.forEach(function (tempNode) {
-             if (n.id === tempNode.id) sigmaInstance.graph.dropNode(tempNode.id);
-           }) 
-          
+    //drop temp nodes if they exist
+    tempNodes.forEach(function (tempNode) {
+      if (n.id === tempNode.id) sigmaInstance.graph.dropNode(tempNode.id);
+    })
+
+    tempNodes = [];  //clear the tempNodes arrays
             
-             if (n.id === e.data.node.id) {
-                n.color = nodeHighlightColor;       //use the highlight color
-             }
-             else {
-                 n.color =   n[prefix + 'color'];   //use the normal color
-             }
-            
-        });
-  
-  
-  
-  
-  
+    if (n.id === e.data.node.id) {
+      n.color = nodeHighlightColor;       //use the highlight color
+    }
+    else {
+      n.color = n[prefix + 'color'];   //use the normal color
+    }
+
+  });
+
+
+
+
+
   if (e.data.node.id === 'topicNode') {
-     prefix = 'circular_';
-     
-     
-     
+    prefix = 'circular_';
+
+
+
     toggleAnimation(null);
   }
   else {
-     prefix = 'grid_';
+    prefix = 'grid_';
      
     //e.data.node.color = '#AA0000';
     console.log(e.data.node);
-    
-     
-      
-       if (!e.data.node.selected) {  //new selection
+
+
+
+    if (!e.data.node.selected) {  //new selection
        
-       var callback = null;
-       
+      var callback = null;
+
+
+
+      sigmaInstance.graph.nodes().forEach(function (n) {
+        // if (toKeep[n.id])
+        //   n.color = n.originalColor;
+        // else
+        //  n.color = '#eee';
+        //console.log(n);
          
-         
-         sigmaInstance.graph.nodes().forEach(function (n) {
-           // if (toKeep[n.id])
-           //   n.color = n.originalColor;
-           // else
-           //  n.color = '#eee';
-           //console.log(n);
-         
-           console.log("node is not selected")
-           if (n.id === e.data.node.id) {
-           
-              callback = function() {
+        console.log("node is not selected")
+        if (n.id === e.data.node.id) {
+
+          callback = function () {
+
+            console.log("animation callback!");
                 
-                console.log("animation callback!");
-                
-                //temporary nodes
-                //var i=0;
-                console.log("n: ",n);
-                //n.phrases.forEach(function(val) {
-                for(var i=0; i<n.phrases.length; i++) {
-                  var temp = {
-                      id: 'tempNode_'+i,
-                      size: 1,
-                      grid_size: 1,
-                      x: n.grid_x,
-                      y: n.grid_y,
-                      grid_x: n.grid_x + 0.75,
-                      grid_y: n.grid_y + + 0.5 + i*0.5,
-                      label: n.phrases[i],
-                      type: 'goo'
-                    };
-                    
-                    tempNodes.push(temp);
-                    sigmaInstance.graph.addNode(temp);
-                    
-                    sigmaInstance.graph.addEdge({
-                      id: 'tempEdge_'+i,
-                      source: temp.id,
-                      target: n.id,
-                      type: 'goo'
-                    });
-                    
-                    if (i>5) break;
-                };
-              
-             
-                  
-                  sigmaInstance.refresh(); 
-                  animatePhrases(null);  //no animatePhrases callback
+            //temporary nodes
+            //var i=0;
+            console.log("n: ", n);
+            //n.phrases.forEach(function(val) {
+            for (var i = 0; i < n.phrases.length; i++) {
+              var temp = {
+                id: 'tempNode_' + i,
+                size: 1,
+                grid_size: 1,
+                x: n.grid_x,
+                y: n.grid_y,
+                grid_x: n.grid_x + 0.75,
+                grid_y: n.grid_y + + 0.5 + i * 0.5,
+                label: n.phrases[i],
+                type: 'goo'
               };
-             
-             n.grid_x = n.original_grid_x + 0.5;
-             
-             n.selected = true;
-           }
-           else {
+
+              tempNodes.push(temp);
+              sigmaInstance.graph.addNode(temp);
+
+              sigmaInstance.graph.addEdge({
+                id: 'tempEdge_' + i,
+                source: temp.id,
+                target: n.id,
+                type: 'goo'
+              });
+
+              if (i > 5) break;
+            };
+
+
+
+            sigmaInstance.refresh();
+            animatePhrases(null);  //no animatePhrases callback
+          };
+
+          n.grid_x = n.original_grid_x + 0.5;
+
+          n.selected = true;
+        }
+        else {
             
             
-             //restore properties
-             //n.grid_size = kw_size;
-             //n.grid_x = n.original_grid_x;
+          //restore properties
+          //n.grid_size = kw_size;
+          //n.grid_x = n.original_grid_x;
             
            
-             if (n.id !== 'tempNodeBefore' || n.id !== 'tempNodeAfter') {
-              n.grid_x = -n.original_grid_x; 
-             }
-             //n.grid_size *= 0.5;
-             n.selected = false; //unselect other nodes
-           }
+          if (n.id !== 'tempNodeBefore' || n.id !== 'tempNodeAfter') {
+            n.grid_x = -n.original_grid_x;
+          }
+          //n.grid_size *= 0.5;
+          n.selected = false; //unselect other nodes
+        }
 
 
-         });
-       }
-       else {  //already selected
-         console.log("node was already selected");
-         
-       }
+      });
+    }
+    else {  //already selected
+      console.log("node was already selected");
+
+    }
         
-        // Since the data has been modified, we need to
-        // call the refresh method to make the colors
-        // update effective.
-        if (!callback)
-          sigmaInstance.refresh();
-          
-        toggleAnimation(callback);
-        callback = null;
-        
-          // Start the ForceAtlas2 algorithm
-          // (requires "sigma.forceatlas2.js" to be included)
-        //sigmaInstance.startForceAtlas2();
-        
-        
+    // Since the data has been modified, we need to
+    // call the refresh method to make the colors
+    // update effective.
+    if (!callback)
+      sigmaInstance.refresh();
+
+    toggleAnimation(callback);
+    callback = null;     
   }
 });
-
-
-/*
-sigmaInstance.bind('overNode', function(event) {
-  console.log("overnodes");
-    //console.log(sigmaInstance.graph.getNodesCount());
-      
-    
-     });
-     */
-//dom = document.querySelector('#graph-container canvas:last-child');
