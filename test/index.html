@@ -6,10 +6,24 @@
   <link rel="stylesheet" href="../bower_components/mocha/mocha.css">
 </head>
 <body>
+  <div id="graph-container"></div>
   <div id="mocha"></div>
   <script src="../bower_components/mocha/mocha.js"></script>
   <script>mocha.setup('bdd');</script>
   <script src="../bower_components/chai/chai.js"></script>
+  
+  <!--
+  <script src="../bower_components/blanket/dist/mocha/blanket_mocha.min.js"></script>
+  <script src="../bower_components/blanket/src/adapters/mocha-blanket.js"></script>
+  
+  -->
+  <!--
+  <script src="../bower_components/blanket/dist/mocha/blanket_mocha.js" data-cover-adapter="../bower_components/blanket/src/adapters/mocha-blanket.js"  data-cover-modulepattern="\.\/(.*?)\/"></script>
+  -->
+  <script src="../bower_components/blanket/dist/mocha/blanket_mocha.js" data-cover-adapter="../bower_components/blanket/src/adapters/mocha-blanket.js" data-cover-only="[scripts/variation.js]"></script> <!-- data-cover-only="//.*/" -->
+  <!--<script src="blanket.min.js"-->
+        
+  
   <script>
     var assert = chai.assert;
     var expect = chai.expect;
@@ -18,12 +32,19 @@
   <!-- bower:js -->
   <!-- endbower -->
   <!-- include source files here... -->
+  <!--<script src="app/scripts/main.js"></script>-->
+  
+  <script src="scripts/sigma.min.js"></script>
+  <script src="scripts/sigma.plugins.animate.js"></script>
+  <script src="scripts/variation.js" ></script> <!-- data-cover -->
   <!-- include spec files here... -->
-  <script src="spec/test.js"></script>
+  <script src="spec/variationSpec.js"></script>
   <script>
     if (navigator.userAgent.indexOf('PhantomJS') === -1) {
       mocha.run();
     }
   </script>
+  
+  
 </body>
 </html>

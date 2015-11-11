@@ -1,6 +1,8 @@
 node_modules
 dist
 .tmp
+.vscode
+jsconfig.json
 .sass-cache
 bower_components
 test/bower_components

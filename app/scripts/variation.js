@@ -184,9 +184,11 @@ sigma.canvas.nodes.goo = function (node, ctx, settings) {
 };
 
 // "methods have to be added before instances are created to make them available""
+
 sigma.classes.graph.addMethod('getNodesCount', function () {
   return this.nodesArray.length;
 });
+
 
 // Instantiate sigma:
 sigmaInstance = new sigma({
