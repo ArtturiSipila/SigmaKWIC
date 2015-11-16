@@ -195,7 +195,7 @@
 
 // Instantiate sigma:
     sigmaInstance = new sigma({
-        id: 'mySigma',
+        //id: 'mySigma',  //id is not needed
         graph: g,
         renderer: {
             container: document.getElementById('graph-container'),
