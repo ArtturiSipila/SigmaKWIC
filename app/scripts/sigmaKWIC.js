@@ -26,7 +26,8 @@
         nodeHighlightColor = '#B85959',
         nodeColorByPosition = false,
         phraseNodeXOffset = 0.75,
-        phraseNodeYOffset = 1;
+        phraseNodeYOffset = 1,
+        prefix = 'circular_';  //the current view state, we start with 'circular' state
 
 // Generate a random graph:
     g.nodes.push({
@@ -43,8 +44,8 @@
         size: 1,
         circular_size: 1,
         grid_size: 1,
-        color: '#888',
-        circular_color: '#888',
+        color: nodeHighlightColor,  //the topic node will be highlighted on init
+        circular_color: nodeHighlightColor,
         grid_color: '#888',
         selected: true,
         type: 'goo'
@@ -70,11 +71,12 @@
             type: 'goo'
         };
 
+        // copy the animated properties to the current or actually values
         ['x', 'y', 'size', 'color'].forEach(function (val) {
-            o[val] = o['grid_' + val];
+            o[val] = o[prefix + val];
         });
 
-        console.log(o);
+        //console.log(o);
         g.nodes.push(o);
     }
 
@@ -184,12 +186,12 @@
         ctx.fill();
     };
 
-// "methods have to be added before instances are created to make them available""
-
+    // "methods have to be added before instances are created to make them available""
+    /*
     sigma.classes.graph.addMethod('getNodesCount', function () {
         return this.nodesArray.length;
     });
-
+    */
 
 // Instantiate sigma:
     sigmaInstance = new sigma({
@@ -225,9 +227,8 @@
             defaultLabelSize: 18
             //font: "Lato"
         }
-    });
-
-    var prefix = 'circular_';
+    });  
+    
     var toggleAnimation = function (callback) {
 
         //calculate colors based on the new position
@@ -269,18 +270,17 @@
             sigmaInstance.refresh();
         }
 
-
         sigma.plugins.animate(
             sigmaInstance,
             {
                 x: prefix + 'x',
                 y: prefix + 'y',
-                size: prefix + 'size'
-                //color: prefix + 'color'
+                size: prefix + 'size',
+                //color: prefix + 'color'  currently animating the color will mess up the highlight logic
             },
             {
                 onComplete: function () {
-                    console.log("layout animation complete");
+                    //console.log("layout animation complete");
                     if (callback) callback();
                 }
             }
@@ -298,7 +298,7 @@
             },
             {
                 onComplete: function () {
-                    console.log("phrase animation complete");
+                    //console.log("phrase animation complete");
                     if (callback) callback();
                 }
             }
@@ -315,11 +315,10 @@
     sigmaInstance.bind('clickNode', function (e) {
         //console.log(e);
 
-
         //common functionality regardless if the node is a topic or keyword
         sigmaInstance.graph.nodes().forEach(function (n) {
 
-            //drop temp nodes if they exist
+            //drop the existing temp nodes 
             phraseNodes.forEach(function (tempNode) {
                 if (n.id === tempNode.id) sigmaInstance.graph.dropNode(tempNode.id);
             })
@@ -328,9 +327,13 @@
                 n.color = nodeHighlightColor;       //use the highlight color
             }
             else {
-                n.color = n[prefix + 'color'];   //use the normal color
+                if (e.data.node.id === 'topicNode') {
+                    n.color = n['circular_color'];   //use the normal color
+                }
+                else {
+                    n.color = n['grid_color'];   //use the normal color
+                }
             }
-
         });
 
         if (e.data.node.id === 'topicNode') {
