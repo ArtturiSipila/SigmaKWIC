@@ -205,7 +205,7 @@
             labelThreshold: 0,   //always show labels
             //autoRescale: false,
             mouseEnabled: true,
-            touchEnabled: false,
+            touchEnabled: true,
             mouseWheelEnabled: false,  //disable mouse wheel zooming
             nodesPowRatio: 1,
             edgesPowRatio: 1,
