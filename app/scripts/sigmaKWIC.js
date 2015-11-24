@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 var i,
     sigmaInstance,
     o,
@@ -11,7 +11,7 @@ var i,
     topic = 'my topic',
     kws = [
         { keyword: 'dolor', phrases: ['Lorem ipsum', 'sit amet'] },
-        { keyword: 'sed', phrases: ['consectetur adipiscing elit,', 'do eiusmod', 'tempor incididunt'] },
+        { keyword: 'sed', phrases: ['consectetur adipiscing elit,', 'do eiusmod', 'tempor incididunt', 'Nisi laboris do do', 'labore irure sunt non', 'ad consectetur qui deserunt'] },
         { keyword: 'minim', phrases: ['Ut enim ad', 'veniam, quis nostrud exercitation'] },
         { keyword: 'reprehenderit', phrases: ['Duis aute irure dolor in', 'in voluptate velit esse'] },
         { keyword: 'fugiat', phrases: ['cillum dolore eu', 'nulla pariatur'] },
@@ -26,11 +26,13 @@ var i,
     nodeColorByPosition = false,
     phraseNodeXOffset = 0.75,
     phraseNodeYOffset = 1,
+    phraseDisplayLimit = 5,
     prefix = 'circular_';  //the current view state, we start with 'circular' state
 
 // Generate a random graph:
 g.nodes.push({
     id: 'topicNode',
+    node_type: 'topicNode',
     label: topic,
     x: 0,
     y: 4,
@@ -54,6 +56,7 @@ g.nodes.push({
 for (i = 0; i < kws.length; i++) {
     o = {
         id: 'kw_' + i,
+        node_type: 'keywordNode',
         label: kws[i].keyword,
         keyword: kws[i].keyword,
         phrases: kws[i].phrases,
@@ -229,6 +232,7 @@ sigmaInstance = new sigma({
 });
 
 var toggleAnimation = function (callback) {
+    //console.log("toggleAnimation");
 
     //calculate colors based on the new position
     if (nodeColorByPosition) {
@@ -287,7 +291,7 @@ var toggleAnimation = function (callback) {
 };
 
 var animatePhrases = function (callback) {
-
+    //console.log("animate phrases");
     sigma.plugins.animate(
         sigmaInstance,
         {
@@ -311,20 +315,23 @@ toggleAnimation();
  */
 
 var phraseNodes = [];
+/*
 sigmaInstance.bind('overNode', function (e) {
     console.log("OVER NODE");
 })
+*/
 sigmaInstance.bind('clickNode', function (e) {    
     console.log("clickNode event ",e);
-
+    
+    
+    if( e.data.node.node_type === 'phraseNode')  return;       
+     
+     var swapping = false;  //we are swapping between different phrases
+    
     //common functionality regardless if the node is a topic or keyword
     sigmaInstance.graph.nodes().forEach(function (n) {
 
-        //drop the existing temp nodes 
-        phraseNodes.forEach(function (tempNode) {
-            if (n.id === tempNode.id) sigmaInstance.graph.dropNode(tempNode.id);
-        })
-
+        // match the event node to graph nodes
         if (n.id === e.data.node.id) {
             n.color = nodeHighlightColor;       //use the highlight color
         }
@@ -335,18 +342,53 @@ sigmaInstance.bind('clickNode', function (e) {
             else {
                 n.color = n['grid_color'];   //use the normal color
             }
+            n.selected = false;  
         }
     });
 
-    if (e.data.node.id === 'topicNode') {
+    if (e.data.node.node_type === 'topicNode') {
         prefix = 'circular_';   //clicking a topic node will make a transition to circular layout
+        
+        //drop the existing phrase nodes 
+        sigmaInstance.graph.nodes().forEach(function (n) {
+            if (n.node_type === 'phraseNode') sigmaInstance.graph.dropNode(n.id);
+        });
+        phraseNodes = [];
+        
         toggleAnimation(null);
     }
-    else {                    //otherwise we have clicked a keyword node and we use the grid layout
+    else if( e.data.node.node_type === 'keywordNode') {                    //otherwise we have clicked a keyword node and we use the grid layout
         prefix = 'grid_';
+       
+      
+       
+        if (!e.data.node.selected || (phraseDisplayLimit < e.data.node.phrases.length && phraseNodes.length > 0)) {  //new selection (the event node is not selected) or we can swap the phrases
 
-        if (!e.data.node.selected) {  //new selection
+            
+             var offset = 0;
+            //swapping phrases is possible
+            if (phraseDisplayLimit < e.data.node.phrases.length && phraseNodes.length > 0) {
+                console.log("jep.. last index is ",phraseNodes[phraseNodes.length-1].phrase_index);
+                //if the last displayed node was the last node
+                if (phraseNodes[phraseNodes.length-1].phrase_index === e.data.node.phrases.length-1 ) {
+                    offset = 0;  //not needed but here we go
+                }
+                else {
+                    offset = phraseNodes[phraseNodes.length-1].phrase_index;  //the last phrase index will be the offset for newly displayed phrases
+               }
+               
+               //make sure this is not the first click to this node - otherwise it's not a swapping action
+               if ( e.data.node.selected )
+                    swapping = true;
+               
+            }
 
+
+           //drop the existing phrase nodes 
+            sigmaInstance.graph.nodes().forEach(function (n) {
+                if (n.node_type === 'phraseNode') sigmaInstance.graph.dropNode(n.id);
+            });
+        
             var callback = null;
 
             sigmaInstance.graph.nodes().forEach(function (n) {
@@ -357,17 +399,23 @@ sigmaInstance.bind('clickNode', function (e) {
                     callback = function () {
                         //before we push any new nodes to the array we'll clean it up
                         phraseNodes = [];
-
+                            
                         //phrase nodes
-                        for (var i = 0; i < n.phrases.length; i++) {
+                        var iteration = 0;
+                        for (var i = offset; i < n.phrases.length; i++) {
+                            
+                            if (i >= offset+phraseDisplayLimit) break;
+                            
                             var phraseNode = {
                                 id: 'phraseNode_' + i,
+                                node_type: 'phraseNode',
+                                phrase_index: i,
                                 size: 1,
                                 grid_size: 0.75,
                                 x: n.grid_x,
                                 y: n.grid_y,
                                 grid_x: n.grid_x + phraseNodeXOffset,
-                                grid_y: n.grid_y + phraseNodeYOffset + i * phraseNodeYOffset,
+                                grid_y: n.grid_y + phraseNodeYOffset + iteration * phraseNodeYOffset,
                                 label: n.phrases[i],
                                 type: 'goo'
                             };
@@ -384,9 +432,11 @@ sigmaInstance.bind('clickNode', function (e) {
                                 type: 'goo'
                             });
 
-                            if (i > 5) break;
-                        }
-                        ;
+                            console.log("i: ",i," phraseDisplayLimit: ",phraseDisplayLimit);
+                            iteration++;
+                        };
+
+                        n.selected = true;           
 
                         sigmaInstance.refresh();
                         animatePhrases(null);  //no animatePhrases callback
@@ -394,17 +444,16 @@ sigmaInstance.bind('clickNode', function (e) {
 
                     n.grid_x = n.original_grid_x + 0.5;
 
-                    n.selected = true;
                 }
-                else {
+                else {  //move other nodes to the opposite direction
                     n.grid_x = -n.original_grid_x;
-                    n.selected = false; //unselect other nodes
+                     n.selected = false;             //unselect other nodes
                 }
 
             });
         }
-        else {  //already selected
-            //console.log('node was already selected'");
+        else {
+            //we are doing nothing as this was a second click to the same node
         }
 
         // Since the data has been modified, we need to
@@ -413,7 +462,18 @@ sigmaInstance.bind('clickNode', function (e) {
         if (!callback)
             sigmaInstance.refresh();
 
-        toggleAnimation(callback);
+        //spaghetti-code warning!!
+
+        //special case, we are swapping keywords
+        if (swapping) {
+            callback();
+        }
+        else {
+            toggleAnimation(callback);    
+        }
+        
+        
         callback = null;
-    }
+    } 
+    
 });
