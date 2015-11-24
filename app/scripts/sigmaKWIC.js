@@ -208,7 +208,7 @@ sigmaInstance = new sigma({
         //autoRescale: false,
         mouseEnabled: true,
         touchEnabled: true,
-        mouseWheelEnabled: false,  //disable mouse wheel zooming
+        mouseWheelEnabled: true,  //disable mouse wheel zooming
         nodesPowRatio: 1,
         edgesPowRatio: 1,
         defaultEdgeColor: '#333',
@@ -230,6 +230,28 @@ sigmaInstance = new sigma({
         //font: 'Lato'
     }
 });
+
+var moveCameraToNode = function (node, animate, ratio) {
+    animate = (typeof animate === 'undefined') ? false : animate;
+    ratio = (typeof ratio === 'undefined') ? 1 : ratio;
+    
+    var x_offset = 100;
+    if (animate) {
+
+        sigma.misc.animation.camera(
+            sigmaInstance.camera,
+            {
+                x: node[sigmaInstance.camera.readPrefix + 'x'] + x_offset,
+                y: node[sigmaInstance.camera.readPrefix + 'y'],
+                ratio: ratio
+            },
+            { duration: sigmaInstance.settings('animationsTime') || 500 }
+            );
+    }
+    else {
+        sigmaInstance.cameras[0].goTo({ x: node['read_cam0:x'], y: node['read_cam0:y'], ratio: ratio })
+    }
+};
 
 var toggleAnimation = function (callback) {
     //console.log("toggleAnimation");
@@ -355,12 +377,14 @@ sigmaInstance.bind('clickNode', function (e) {
         });
         phraseNodes = [];
         
-        toggleAnimation(null);
+        toggleAnimation(function() {
+            moveCameraToNode(e.data.node, true, 1);
+        });
     }
     else if( e.data.node.node_type === 'keywordNode') {                    //otherwise we have clicked a keyword node and we use the grid layout
         prefix = 'grid_';
        
-      
+    
        
         if (!e.data.node.selected || (phraseDisplayLimit < e.data.node.phrases.length && phraseNodes.length > 0)) {  //new selection (the event node is not selected) or we can swap the phrases
 
@@ -439,7 +463,9 @@ sigmaInstance.bind('clickNode', function (e) {
                         n.selected = true;           
 
                         sigmaInstance.refresh();
-                        animatePhrases(null);  //no animatePhrases callback
+                        animatePhrases(function() {
+                              moveCameraToNode( e.data.node, true, 1.2 );
+                        });  //no animatePhrases callback
                     };
 
                     n.grid_x = n.original_grid_x + 0.5;
