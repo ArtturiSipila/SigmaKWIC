@@ -398,7 +398,7 @@ sigmaInstance.bind('clickNode', function (e) {
                     offset = 0;  //not needed but here we go
                 }
                 else {
-                    offset = phraseNodes[phraseNodes.length-1].phrase_index;  //the last phrase index will be the offset for newly displayed phrases
+                    offset = phraseNodes[phraseNodes.length-1].phrase_index + 1;  //the phrase after the last phrase index will be the offset for newly displayed phrases
                }
                
                //make sure this is not the first click to this node - otherwise it's not a swapping action
