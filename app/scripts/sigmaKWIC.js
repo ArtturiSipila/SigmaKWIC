@@ -233,7 +233,7 @@ sigmaInstance = new sigma({
 var moveCameraToNode = function (node, animate, ratio) {
     animate = (typeof animate === 'undefined') ? false : animate;
     ratio = (typeof ratio === 'undefined') ? 1 : ratio;
-    
+
     var x_offset = 100;
     if (animate) {
 
@@ -336,11 +336,11 @@ toggleAnimation();
  */
 
 var phraseNodes = [];
-sigmaInstance.bind('clickNode', function (e) {    
-        
-    if( e.data.node.node_type === 'phraseNode')  return;       
-     
-     var swapping = false;  //we are swapping between different phrases
+sigmaInstance.bind('clickNode', function (e) {
+
+    if (e.data.node.node_type === 'phraseNode') return;
+
+    var swapping = false;  //we are swapping between different phrases
     
     //common functionality regardless if the node is a topic or keyword
     sigmaInstance.graph.nodes().forEach(function (n) {
@@ -356,7 +356,7 @@ sigmaInstance.bind('clickNode', function (e) {
             else {
                 n.color = n['grid_color'];   //use the normal color
             }
-            n.selected = false;  
+            n.selected = false;
         }
     });
 
@@ -368,42 +368,42 @@ sigmaInstance.bind('clickNode', function (e) {
             if (n.node_type === 'phraseNode') sigmaInstance.graph.dropNode(n.id);
         });
         phraseNodes = [];
-        
-        toggleAnimation(function() {
+
+        toggleAnimation(function () {
             moveCameraToNode(e.data.node, true, 1);
         });
     }
-    else if( e.data.node.node_type === 'keywordNode') {                    //otherwise we have clicked a keyword node and we use the grid layout
+    else if (e.data.node.node_type === 'keywordNode') {                    //otherwise we have clicked a keyword node and we use the grid layout
         prefix = 'grid_';
-       
-    
-       
+
+
+
         if (!e.data.node.selected || (phraseDisplayLimit < e.data.node.phrases.length && phraseNodes.length > 0)) {  //new selection (the event node is not selected) or we can swap the phrases
 
             
-             var offset = 0;
+            var offset = 0;
             //swapping phrases is possible
             if (phraseDisplayLimit < e.data.node.phrases.length && phraseNodes.length > 0) {
                 //if the last displayed node was the last node
-                if (phraseNodes[phraseNodes.length-1].phrase_index === e.data.node.phrases.length-1 ) {
+                if (phraseNodes[phraseNodes.length - 1].phrase_index === e.data.node.phrases.length - 1) {
                     offset = 0;  //not needed but here we go
                 }
                 else {
-                    offset = phraseNodes[phraseNodes.length-1].phrase_index + 1;  //the phrase after the last phrase index will be the offset for newly displayed phrases
-               }
+                    offset = phraseNodes[phraseNodes.length - 1].phrase_index + 1;  //the phrase after the last phrase index will be the offset for newly displayed phrases
+                }
                
-               //make sure this is not the first click to this node - otherwise it's not a swapping action
-               if ( e.data.node.selected )
+                //make sure this is not the first click to this node - otherwise it's not a swapping action
+                if (e.data.node.selected)
                     swapping = true;
-               
+
             }
 
 
-           //drop the existing phrase nodes 
+            //drop the existing phrase nodes 
             sigmaInstance.graph.nodes().forEach(function (n) {
                 if (n.node_type === 'phraseNode') sigmaInstance.graph.dropNode(n.id);
             });
-        
+
             var callback = null;
 
             sigmaInstance.graph.nodes().forEach(function (n) {
@@ -418,9 +418,9 @@ sigmaInstance.bind('clickNode', function (e) {
                         //phrase nodes
                         var iteration = 0;
                         for (var i = offset; i < n.phrases.length; i++) {
-                            
-                            if (i >= offset+phraseDisplayLimit) break;
-                            
+
+                            if (i >= offset + phraseDisplayLimit) break;
+
                             var phraseNode = {
                                 id: 'phraseNode_' + i,
                                 node_type: 'phraseNode',
@@ -450,11 +450,11 @@ sigmaInstance.bind('clickNode', function (e) {
                             iteration++;
                         };
 
-                        n.selected = true;           
+                        n.selected = true;
 
                         sigmaInstance.refresh();
-                        animatePhrases(function() {
-                              moveCameraToNode( e.data.node, true, 1.2 );
+                        animatePhrases(function () {
+                            moveCameraToNode(e.data.node, true, 1.2);
                         });  //no animatePhrases callback
                     };
 
@@ -463,7 +463,7 @@ sigmaInstance.bind('clickNode', function (e) {
                 }
                 else {  //move other nodes to the opposite direction
                     n.grid_x = -n.original_grid_x;
-                     n.selected = false;             //unselect other nodes
+                    n.selected = false;             //unselect other nodes
                 }
 
             });
@@ -485,11 +485,11 @@ sigmaInstance.bind('clickNode', function (e) {
             callback();
         }
         else {
-            toggleAnimation(callback);    
+            toggleAnimation(callback);
         }
-        
-        
+
+
         callback = null;
-    } 
-    
+    }
+
 });
