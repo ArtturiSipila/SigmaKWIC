@@ -78,7 +78,6 @@ for (i = 0; i < kws.length; i++) {
         o[val] = o[prefix + val];
     });
 
-    //console.log(o);
     g.nodes.push(o);
 };
 
@@ -337,15 +336,8 @@ toggleAnimation();
  */
 
 var phraseNodes = [];
-/*
-sigmaInstance.bind('overNode', function (e) {
-    console.log("OVER NODE");
-})
-*/
 sigmaInstance.bind('clickNode', function (e) {    
-    console.log("clickNode event ",e);
-    
-    
+        
     if( e.data.node.node_type === 'phraseNode')  return;       
      
      var swapping = false;  //we are swapping between different phrases
@@ -392,7 +384,6 @@ sigmaInstance.bind('clickNode', function (e) {
              var offset = 0;
             //swapping phrases is possible
             if (phraseDisplayLimit < e.data.node.phrases.length && phraseNodes.length > 0) {
-                console.log("jep.. last index is ",phraseNodes[phraseNodes.length-1].phrase_index);
                 //if the last displayed node was the last node
                 if (phraseNodes[phraseNodes.length-1].phrase_index === e.data.node.phrases.length-1 ) {
                     offset = 0;  //not needed but here we go
@@ -456,7 +447,6 @@ sigmaInstance.bind('clickNode', function (e) {
                                 type: 'goo'
                             });
 
-                            console.log("i: ",i," phraseDisplayLimit: ",phraseDisplayLimit);
                             iteration++;
                         };
 
